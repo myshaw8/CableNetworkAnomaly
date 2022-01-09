@@ -33,3 +33,6 @@ device_type: type of network object
 2. Using secondary sources, parse the array like FBC strings for WAVE and INGRESS impairments.
 3. Using the network parent to child relationships, discover a way to algorithmically find the most common ancestor of any collection of address network elements and visualize this.
 4. Find a way to losslessly compress the FBC raw signal for easier access in Hive Hadoop.
+
+**Combined Objective**
+Find devices with WAVE and INGRESS, cluster those devices by array like FBC strings. Then find those devices’ most common ancestor and report the network elements that are causing the impairment.
