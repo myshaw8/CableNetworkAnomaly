@@ -4,6 +4,7 @@ import os
 import matplotlib.pyplot as plt
 from numpy import inf
 import numpy as np
+import json
 
 pd.set_option('display.max_columns', None)
 
@@ -14,7 +15,7 @@ for file in os.listdir(os.getcwd() + '\\' + dir):
     print(dir + '\\' + file)
     table = pd.read_csv(dir + '\\' + file)
     N = len(table) #1046
-    subset_size = 500
+    subset_size = N
     # print(table)
     break
     # pd_import_list.append(pd.read_csv(dir + '\\' + file))
@@ -28,7 +29,7 @@ def clean_amplitudes(fbc):
     return res
 
 
-def distance(fbc1, fbc2, dillution=3):
+def distance(fbc1, fbc2, dillution=10):
     n = len(fbc1)
     if n != len(fbc2):
         print("fbcs are different sizes")
@@ -99,28 +100,31 @@ print(L)
 
 clusters = [[i] for i in range(subset_size)]
 k = 5
-while len(clusters) > k:
-    n_clusters = len(clusters)
-    print()
-    print(n_clusters)
-    cluster_distances = [[inf for i in range(len(clusters))] for i in range(len(clusters))]
-    d_min = inf
-    i_min, j_min = -1, -1
-    for i in range(n_clusters):
-        clusteri = clusters[i]
-        dist = [0 for i in range(n_clusters)]
-        for j in range(i):
-            clusterj = clusters[j]
-            d = cluster_dist(clusteri,clusterj,table)
-            cluster_distances[i][j] = d
-            cluster_distances[j][i] = d
-            if d < d_min:
-                d_min = d
-                i_min, j_min = i, j
-    # print(cluster_distances)
-    print(d_min, i_min, j_min)
+
+n_clusters = len(clusters)
+cluster_distances = np.array([[inf for i in range(len(clusters))] for i in range(len(clusters))])
+for i in range(n_clusters):
+    clusteri = clusters[i]
+    dist = [0 for i in range(n_clusters)]
+    for j in range(i):
+        clusterj = clusters[j]
+        d = cluster_dist(clusteri,clusterj,table)
+        cluster_distances[i][j] = d
+        cluster_distances[j][i] = d
+
+for count in range(n_clusters-k):
+    d_min = np.amin(cluster_distances)
+    i_min, j_min = np.where(cluster_distances == d_min)[0]
+
     clusters[i_min] = clusters[i_min]+clusters[j_min]
-    del clusters[j_min]
+    clusters[j_min] = []
+    for i in range(n_clusters):
+        cluster_distances[i][j_min] = inf
+        cluster_distances[j_min][i] = inf
 
 
+clusters = [[table["device_id"][i] for i in x] for x in clusters if x!= []]
 print(clusters)
+
+with open('cluster_result', 'w') as f:
+    json.dump(clusters, f)
